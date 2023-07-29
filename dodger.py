@@ -6,12 +6,10 @@ WINDOWHEIGHT = 600
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
 FPS = 60
-BADDIEMINSIZE = 10
-BADDIEMAXSIZE = 40
-BADDIEMINSPEED = 1
-BADDIEMAXSPEED = 8
-ADDNEWBADDIERATE = 6
-PLAYERMOVERATE = 5
+BADDIESIZE = 10
+BADDIESPEED = 5
+ADDNEWBADDIERATE = 2
+PLAYERMOVERATE = 7
 
 def terminate():
     pygame.quit()
@@ -127,11 +125,33 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             # Arrow 크기는 fixed, so do not need this
-            baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             # Position of arrow startingcan be anywhere, direction of arrow should be towards the user, not only towards bottom.
-            newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH-baddieSize), 0 - baddieSize, baddieSize, baddieSize),
-                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+
+            # x, y 를 정해줘야돼
+            # x 가 랜덤이면 y = 0 or WINDOWHEIGHT
+            # y 가 랜덤이면 x = 0 or WINDOWWIDTH
+            # 이거조차도 랜덤으로 해야돼
+
+            side = random.randint(0, 3)
+            if side == 0:
+                newBaddie = {'rect': pygame.Rect(0 - BADDIESIZE, random.randint(0, WINDOWHEIGHT-BADDIESIZE), BADDIESIZE, BADDIESIZE),
+                        'speed': BADDIESPEED,
+                        'surface':pygame.transform.scale(baddieImage, (BADDIESIZE, BADDIESIZE)),
+                        }
+            elif side == 1:
+                newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH-BADDIESIZE), WINDOWHEIGHT + BADDIESIZE, BADDIESIZE, BADDIESIZE),
+                        'speed': BADDIESPEED,
+                        'surface':pygame.transform.scale(baddieImage, (BADDIESIZE, BADDIESIZE)),
+                        }
+            elif side == 2:
+                newBaddie = {'rect': pygame.Rect(WINDOWWIDTH + BADDIESIZE, random.randint(0, WINDOWHEIGHT-BADDIESIZE), BADDIESIZE, BADDIESIZE),
+                        'speed': BADDIESPEED,
+                        'surface':pygame.transform.scale(baddieImage, (BADDIESIZE, BADDIESIZE)),
+                        }
+            else:
+                newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH-BADDIESIZE), 0 - BADDIESIZE, BADDIESIZE, BADDIESIZE),
+                        'speed': BADDIESPEED,
+                        'surface':pygame.transform.scale(baddieImage, (BADDIESIZE, BADDIESIZE)),
                         }
 
             baddies.append(newBaddie)
@@ -149,18 +169,9 @@ while True:
         # Move the baddies down.
         # Apply directions later on
         for b in baddies:
-            if not reverseCheat and not slowCheat:
-                b['rect'].move_ip(0, b['speed'])
-            elif reverseCheat:
-                b['rect'].move_ip(0, -5)
-            elif slowCheat:
-                b['rect'].move_ip(0, 1)
+            b['rect'].move_ip((playerRect.x - b['rect'].x)*0.01, (playerRect.y - b['rect'].y)*0.01)
 
-         # Delete baddies that have fallen past the bottom.
-         
-        for b in baddies[:]:
-            if b['rect'].top > WINDOWHEIGHT:
-                baddies.remove(b)
+         # Delete baddies that have fallen past the other side
 
         # Draw the game world on the window.
         windowSurface.fill(BACKGROUNDCOLOR)
