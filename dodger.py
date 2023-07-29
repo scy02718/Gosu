@@ -1,11 +1,11 @@
 import pygame, random, sys
 from pygame.locals import *
 
-WINDOWWIDTH = 600
+WINDOWWIDTH = 1000
 WINDOWHEIGHT = 600
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
-FPS = 40
+FPS = 60
 BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
 BADDIEMINSPEED = 1
@@ -44,7 +44,6 @@ pygame.init()
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger')
-pygame.mouse.set_visible(False)
 
 # set up fonts
 font = pygame.font.SysFont(None, 48)
@@ -54,6 +53,7 @@ gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
 # set up images
+# Custom images -> Arrows, Character, Boss (maybe)
 playerImage = pygame.image.load('player.png')
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
@@ -68,9 +68,9 @@ waitForPlayerToPressKey()
 topScore = 0
 while True:
     # set up the start of the game
-    baddies = []
+    baddies = [] # Saves details of arrows (add new variable named directions)
     score = 0
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+    playerRect.topleft = (WINDOWWIDTH/2, WINDOWHEIGHT/2)
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0
@@ -120,16 +120,15 @@ while True:
                 if event.key == K_DOWN or event.key == ord('s'):
                     moveDown = False
 
-            if event.type == MOUSEMOTION:
-                # If the mouse moves, move the player where the cursor is.
-                playerRect.move_ip(event.pos[0] - playerRect.centerx, event.pos[1] - playerRect.centery)
-
         # Add new baddies at the top of the screen, if needed.
+        # ADDNEWBADDIERATE = rate of arrows coming out -> Change depending on time
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
+            # Arrow 크기는 fixed, so do not need this
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+            # Position of arrow startingcan be anywhere, direction of arrow should be towards the user, not only towards bottom.
             newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH-baddieSize), 0 - baddieSize, baddieSize, baddieSize),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                         'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
@@ -147,10 +146,8 @@ while True:
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
             playerRect.move_ip(0, PLAYERMOVERATE)
 
-        # Move the mouse cursor to match the player.
-        pygame.mouse.set_pos(playerRect.centerx, playerRect.centery)
-
         # Move the baddies down.
+        # Apply directions later on
         for b in baddies:
             if not reverseCheat and not slowCheat:
                 b['rect'].move_ip(0, b['speed'])
@@ -160,6 +157,7 @@ while True:
                 b['rect'].move_ip(0, 1)
 
          # Delete baddies that have fallen past the bottom.
+         
         for b in baddies[:]:
             if b['rect'].top > WINDOWHEIGHT:
                 baddies.remove(b)
