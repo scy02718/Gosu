@@ -1,15 +1,16 @@
+import math
+
 import pygame, random, sys
 from pygame.locals import *
-import math
 
 WINDOWWIDTH = 1000
 WINDOWHEIGHT = 600
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
 FPS = 60
-BADDIESIZE = 50
+BADDIESIZE = 40
 BADDIESPEED = 5
-ADDNEWBADDIERATE = 5
+ADDNEWBADDIERATE = 10
 PLAYERMOVERATE = 7
 
 def terminate():
@@ -141,17 +142,22 @@ while True:
                 'speed': BADDIESPEED,
                 'surface': pygame.transform.scale(baddieImage, (BADDIESIZE, BADDIESIZE)),
                 'side': side,  # Store the side from which the baddie spawns
+                'direction': (0, 0)
             }
 
-            if side == 0:
+            if side == 0: # left
                 newBaddie['rect'].topleft = (0 - BADDIESIZE, random.randint(0, WINDOWHEIGHT - BADDIESIZE))
-            elif side == 1:
+            elif side == 1: # top
                 newBaddie['rect'].topleft = (random.randint(0, WINDOWWIDTH - BADDIESIZE), WINDOWHEIGHT + BADDIESIZE)
-            elif side == 2:
+            elif side == 2: # right
                 newBaddie['rect'].topleft = (WINDOWWIDTH + BADDIESIZE, random.randint(0, WINDOWHEIGHT - BADDIESIZE))
-            elif side == 3:
+            elif side == 3: # down
                 newBaddie['rect'].topleft = (random.randint(0, WINDOWWIDTH - BADDIESIZE), 0 - BADDIESIZE)
 
+            xDiff = playerRect.x - newBaddie['rect'].x
+            yDiff = playerRect.y - newBaddie['rect'].y
+            norm = math.sqrt(xDiff**2 + yDiff**2)
+            newBaddie['direction'] = (xDiff/norm, yDiff/norm)
             baddies.append(newBaddie)
 
         # Move the player around.
@@ -167,14 +173,7 @@ while True:
         # Move the baddies down.
         # Apply directions later on
         for b in baddies:
-            if b['side'] == 0:
-                b['rect'].move_ip(BADDIESPEED, 0)  # Move towards right (opposite of left)
-            elif b['side'] == 1:
-                b['rect'].move_ip(0, -BADDIESPEED)  # Move upwards (opposite of downwards)
-            elif b['side'] == 2:
-                b['rect'].move_ip(-BADDIESPEED, 0)  # Move towards left (opposite of right)
-            elif b['side'] == 3:
-                b['rect'].move_ip(0, BADDIESPEED)  # Move downwards (opposite of upwards)
+            b['rect'].move_ip(b['direction'][0] * BADDIESPEED, b['direction'][1] * BADDIESPEED)
 
          # Delete baddies that have fallen past the other side
 
