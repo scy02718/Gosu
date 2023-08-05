@@ -8,8 +8,8 @@ WINDOWHEIGHT = 600
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
 FPS = 60
-BADDIESIZE = 40
-BADDIESPEED = 5
+BADDIESIZE = 10
+BADDIESPEED = 4
 ADDNEWBADDIERATE = 10
 PLAYERMOVERATE = 7
 
@@ -125,6 +125,41 @@ while True:
 
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
+        if score % (FPS * 10) == 0:
+            for i in range(5):
+                newBaddie = {
+                    'rect': pygame.Rect(0, (i + 1) * 100, BADDIESIZE*3, BADDIESIZE*3),
+                    'speed': BADDIESPEED,
+                    'surface': pygame.transform.scale(baddieImage, (BADDIESIZE*3, BADDIESIZE*3)),
+                    'side': 1,  # Store the side from which the baddie spawns
+                    'direction': (1, 0)
+                }
+                baddies.append(newBaddie)
+
+        if score % (FPS * 5) == 0:
+            side = random.randint(0, 3)
+            newBaddie = {
+                'rect': pygame.Rect(0, 0, BADDIESIZE * 10, BADDIESIZE * 10),
+                'speed': BADDIESPEED,
+                'surface': pygame.transform.scale(baddieImage, (BADDIESIZE * 10, BADDIESIZE * 10)),
+                'side': side,  # Store the side from which the baddie spawns
+                'direction': (0, 0)
+            }
+
+            if side == 0:  # left
+                newBaddie['rect'].topleft = (0 - BADDIESIZE, random.randint(0, WINDOWHEIGHT - BADDIESIZE))
+            elif side == 1:  # top
+                newBaddie['rect'].topleft = (random.randint(0, WINDOWWIDTH - BADDIESIZE), WINDOWHEIGHT + BADDIESIZE)
+            elif side == 2:  # right
+                newBaddie['rect'].topleft = (WINDOWWIDTH + BADDIESIZE, random.randint(0, WINDOWHEIGHT - BADDIESIZE))
+            elif side == 3:  # down
+                newBaddie['rect'].topleft = (random.randint(0, WINDOWWIDTH - BADDIESIZE), 0 - BADDIESIZE)
+
+            xDiff = playerRect.x - newBaddie['rect'].x
+            yDiff = playerRect.y - newBaddie['rect'].y
+            norm = math.sqrt(xDiff ** 2 + yDiff ** 2)
+            newBaddie['direction'] = (xDiff / norm, yDiff / norm)
+            baddies.append(newBaddie)
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             # Arrow 크기는 fixed, so do not need this
